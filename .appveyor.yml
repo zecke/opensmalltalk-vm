@@ -6,12 +6,12 @@ environment:
   BINTRAYAPIKEY:
     secure: uknPzww818XWJiLecwur9p1MfrkACOyx9d3iNrw/TuD89EoPSc8zLqKdPZjWdcQd
   matrix:
-    - FLAVOR: newspeak.cog.spur
-    - FLAVOR: newspeak.stack.spur
+    # - FLAVOR: newspeak.cog.spur
+    # - FLAVOR: newspeak.stack.spur
     - FLAVOR: squeak.cog.spur
-    - FLAVOR: squeak.cog.v3
-    - FLAVOR: squeak.stack.spur
-    - FLAVOR: squeak.stack.v3
+    # - FLAVOR: squeak.cog.v3
+    # - FLAVOR: squeak.stack.spur
+    # - FLAVOR: squeak.stack.v3
 
 matrix:
   fast_finish: false
@@ -35,6 +35,6 @@ build: false
 # build which causes failures as certain functions attempt to redirect
 # default file handles. Ensure a dummy file descriptor is opened with 'exec'.
 test_script:
-  - '%CYG_BASH% -lc "cd $APPVEYOR_BUILD_FOLDER; exec 0</dev/null; exec ./.travis_build.sh"'
+  - '%CYG_BASH% -lec "cd $APPVEYOR_BUILD_FOLDER; exec 0</dev/null; exec ./.travis_build.sh"'
 on_success:
-  - '%CYG_BASH% -lc "cd $APPVEYOR_BUILD_FOLDER; exec 0</dev/null; exec ./.travis_deploy.sh"'
+  - '%CYG_BASH% -lec "cd $APPVEYOR_BUILD_FOLDER; exec 0</dev/null; exec ./.travis_deploy.sh"'
