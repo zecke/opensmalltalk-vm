@@ -363,7 +363,6 @@ int win32DebugPrintSocketState(void) {
     debugPrintSocket(pss);
     pss = pss->next;
   }
-  return 1;
 }
 
 static void debugCheckWatcherThreads(privateSocketStruct *pss, char* caller) {
@@ -2454,7 +2453,6 @@ void sqResolverHostNameResultSize(char *name, sqInt nameSize)
 
 void sqSocketBindToAddressSize(SocketPtr s, char *addr, sqInt addrSize)
 {
-  int result;
   privateSocketStruct *pss= PSP(s);
 
   if (!(SocketValid(s) && addressValid(addr, addrSize)))
