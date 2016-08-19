@@ -13,7 +13,6 @@ DSAPrims \
 FFTPlugin \
 FilePlugin \
 FloatArrayPlugin \
-FloatMathPlugin \
 HostWindowPlugin \
 IA32ABI \
 JoystickTabletPlugin \
@@ -35,3 +34,4 @@ SoundGenerationPlugin \
 SoundPlugin \
 StarSqueakPlugin \
 SurfacePlugin
+#FloatMathPlugin \
