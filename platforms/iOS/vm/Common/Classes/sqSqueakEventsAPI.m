@@ -91,6 +91,27 @@ extern void setIoProcessEventsHandler(void * handler) {
     ioProcessEventsHandler = (void(*)()) handler;
 }
 
+sqInt ioHasPendingEvent(void) {
+    static usqLong nextPollUSecs = 0;
+    usqLong now = ioUTCMicroseconds();
+
+    if (nextPollUSecs <= now) {
+        if ([getMainWindowDelegate() forceUpdateFlush])
+            [getMainWindowDelegate() ioForceDisplayUpdate];
+        [gDelegateApp.squeakApplication pumpRunLoop];
+        // need to pump events, e.g. wheel events
+        nextPollUSecs = now + 20000;
+    }
+
+    id numEvents = [gDelegateApp.squeakApplication.eventQueue pendingElements];
+    if (numEvents > 0)
+      return 1;
+    return ([NSApp nextEventMatchingMask:NSEventMaskAny
+                                       untilDate:nil
+                                          inMode:NSEventTrackingRunLoopMode
+                                         dequeue:NO]) != NULL;
+}
+
 sqInt ioProcessEvents(void) {
     aioPoll(0);
 

@@ -223,6 +223,7 @@ ioUTCSeconds(void) { return get64(utcMicrosecondClock) / MicrosecondsPerSecond; 
 sqInt
 ioUTCSecondsNow(void) { return currentUTCMicroseconds() / MicrosecondsPerSecond; }
 
+extern sqInt ioHasPendingEvent(void);
 /*
  * On Mac OS X use the following.
  * On Unix use dpy->ioRelinquishProcessorForMicroseconds
@@ -251,7 +252,9 @@ ioRelinquishProcessorForMicroseconds(sqInt microSeconds)
 	}
 
 	aioSleepForUsecs(realTimeToWait);
-
+	extern int ioPending;
+	if (ioHasPendingEvent())
+		sqAtomicAddConst(ioPending, 1);
 	return 0;
 }
 #endif /* !macintoshSqueak */

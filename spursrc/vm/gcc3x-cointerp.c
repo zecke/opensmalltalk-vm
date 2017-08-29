@@ -34,7 +34,9 @@ char *__interpBuildInfo = __buildInfo;
 #include "cointerp.h"
 #include "cogit.h"
 
+#include "sqAtomicOps.h"
 
+int ioPending = 0;
 /* StackInterpreter class>>preambleCCode */
 /* Disable Intel compiler inlining of warning which is used for breakpoints */
 #pragma auto_inline(off)
@@ -61613,6 +61615,7 @@ checkForEventsMayContextSwitch(sqInt mayContextSwitch)
     sqInt objOop1;
     sqInt sema;
     sqInt switched;
+    int value;
 
 
 	/* restore the stackLimit if it has been smashed. */
@@ -61684,15 +61687,17 @@ checkForEventsMayContextSwitch(sqInt mayContextSwitch)
 			switched = 1;
 		}
 	}
-	if (((now = ioUTCMicroseconds())) >= GIV(nextPollUsecs)) {
+       sqLowLevelMFence();
+       do {
+               sqLowLevelMFence();
+               value = ioPending;
+       } while (!sqCompareAndSwap(ioPending, value, 0));
+
+	if (value) {
 		GIV(statIOProcessEvents) += 1;
 		ioProcessEvents();
-
-		/* msecs to wait before next call to ioProcessEvents.  Note that strictly
-		   speaking we might need to update 'now' at this point since
-		   ioProcessEvents could take a very long time on some platforms */
-		GIV(nextPollUsecs) = now + 20000;
 	}
+        now = ioUTCMicroseconds();
 
 	if (GIV(interruptPending)) {
 

@@ -557,11 +557,13 @@ sqInt ioRelinquishProcessorForMicroseconds(sqInt us)
   int now;
   dpy->ioRelinquishProcessorForMicroseconds(us);
   now= ioLowResMSecs();
+#if 0
   if (now - lastInterruptCheck > (1000/25))	/* avoid thrashing intr checks from 1ms loop in idle proc  */
     {
       forceInterruptCheck();	/* ensure timely poll for semaphore activity */
       lastInterruptCheck= now;
     }
+#endif
   return 0;
 }
 #endif /* STACKVM */

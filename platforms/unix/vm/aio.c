@@ -98,6 +98,8 @@
 
 #endif /* !HAVE_CONFIG_H */
 
+#include "sqAtomicOps.h"
+
 /* function to inform the VM about idle time */
 extern void addIdleUsecs(long idleUsecs);
 
@@ -156,10 +158,17 @@ handlerName(aioHandler h)
 
 /* initialise asynchronous i/o */
 
+extern void forceInterruptCheck(int);	/* not really, but hey */
+static int sigio_handler(int info)
+{
+	extern int ioPending;
+	sqAtomicAddConst(ioPending, 1);
+	forceInterruptCheck(info);
+}
+
 void 
 aioInit(void)
 {
-	extern void forceInterruptCheck(int);	/* not really, but hey */
 
 	FD_ZERO(&fdMask);
 	FD_ZERO(&rdMask);
@@ -168,7 +177,7 @@ aioInit(void)
 	FD_ZERO(&xdMask);
 	maxFd = 0;
 	signal(SIGPIPE, SIG_IGN);
-	signal(SIGIO, forceInterruptCheck);
+	signal(SIGIO, sigio_handler);
 }
 
 
