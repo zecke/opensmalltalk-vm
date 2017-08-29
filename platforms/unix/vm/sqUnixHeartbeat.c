@@ -34,6 +34,15 @@
 #include <sys/time.h>
 #include "sqaio.h"
 
+/* Counter for checking if one should sleep */
+static int shouldCheckSleep = 0;
+static int tickWillSleep = 0;
+static int vmWillSleep = 0;
+static pthread_mutex_t sleepLock = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t sleepCond = PTHREAD_COND_INITIALIZER;
+
+
+
 #define SecondsFrom1901To1970      2177452800LL
 #define MicrosecondsFrom1901To1970 2177452800000000LL
 
@@ -247,14 +256,32 @@ ioRelinquishProcessorForMicroseconds(sqInt microSeconds)
     }
     else {
         realTimeToWait = nextWakeupUsecs - utcNow;
-		if (realTimeToWait > microSeconds)
-			realTimeToWait = microSeconds;
+		// Ignore the image relinquish request.. but cap so we can poll for UI events
+		// but with morphic running we will wake-up every 20ms anyway..
+		//if (realTimeToWait > microSeconds)
+		//	realTimeToWait = microSeconds;
 	}
 
+	/* Going to sleep... > 5ms and we will suspend..*/
+	if (realTimeToWait > 5000) {
+		pthread_mutex_lock(&sleepLock);
+		vmWillSleep = 1;
+		sqAtomicAddConst(shouldCheckSleep, 1);
+		pthread_mutex_unlock(&sleepLock);
+	}
+
+	//printf("real time to wait.. %ld\n", realTimeToWait);
 	aioSleepForUsecs(realTimeToWait);
 	extern int ioPending;
 	if (ioHasPendingEvent())
 		sqAtomicAddConst(ioPending, 1);
+
+	if (vmWillSleep) {
+		pthread_mutex_lock(&sleepLock);
+		vmWillSleep = 0;
+		pthread_cond_signal(&sleepCond);
+		pthread_mutex_unlock(&sleepLock);
+	}
 	return 0;
 }
 #endif /* !macintoshSqueak */
@@ -299,6 +326,40 @@ static volatile machine_state beatState = nascent;
 #endif
 static int beatMilliseconds = DEFAULT_BEAT_MS;
 static struct timespec beatperiod = { 0, DEFAULT_BEAT_MS * 1000 * 1000 };
+
+
+static void
+maybeSuspendHeartbeat(void)
+{
+#if !VM_TICKER
+	int value;
+	/* Get an early indication that the VM is going to sleep */
+	sqLowLevelMFence();
+	do {
+		sqLowLevelMFence();
+		value = shouldCheckSleep;
+	} while (!sqCompareAndSwap(shouldCheckSleep, value, 0));
+
+	/* The VM doesn't sleep so let's return quickly */
+	if (!value)
+		return;
+
+	/* Enter the sleep mode now */
+	pthread_mutex_lock(&sleepLock);
+
+	/* The VM might have already woken uk. */
+	if (!vmWillSleep)
+		goto done;
+
+	tickWillSleep = 1;
+	//printf("GOING to sleep the ticker\n");
+	pthread_cond_wait(&sleepCond, &sleepLock);
+
+done:
+	tickWillSleep = 0;
+	pthread_mutex_unlock(&sleepLock);
+#endif
+}
 
 static void *
 beatStateMachine(void *careLess)
@@ -356,6 +417,7 @@ beatStateMachine(void *careLess)
 				exit(1);
 			}
 		heartbeat();
+		maybeSuspendHeartbeat();
 	}
 	beatState = dead;
 	return 0;
