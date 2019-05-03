@@ -403,7 +403,7 @@ Convert(ux,sq, XWin, uxXWinEncoding, sqTextEncoding, 0, 1);
 
 
 
-void sqFilenameFromString(char *uxName, sqInt sqNameIndex, int sqNameLength)
+void sqFilenameFromString(char *uxName, sqInt sqNameIndex, long sqNameLength)
 {
   /*xxx BUG: lots of code generate from the image assumes 1000 chars max path len */
   sq2uxPath(pointerForOop(sqNameIndex), sqNameLength, uxName, 1000, 1);
