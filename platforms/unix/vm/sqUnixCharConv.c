@@ -103,7 +103,6 @@ void setEncoding(void **encoding, char *rawName)
   char *name= strdup(rawName);
   int   len= strlen(name);
   int   i;
-  int   utf8= 0;
   alias *ap= encodings;
   for (i= 0;  i < len;  ++i)
     name[i]= toupper(name[i]);
