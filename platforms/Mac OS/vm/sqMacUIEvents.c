@@ -166,14 +166,13 @@ char modifierMap[256] = {
 void ADBIOCompletionPPC(Byte *dataBufPtr, Byte *opDataPtr, long command);
 Boolean IsKeyDown(void);    
 
-#if !defined(I_AM_CARBON_EVENT) || defined(BROWSERPLUGIN)
+#if !defined(I_AM_CARBON_EVENT)
 int  HandleEvents(void);
 void HandleMenu(int mSelect);
 void HandleMouseDown(EventRecord *theEvent);
 sqInt
 ioProcessEvents(void) {
 	/* This is a noop when running as a plugin; the browser handles events. */
-#ifndef BROWSERPLUGIN
 	static unsigned long   nextPollTick = 0, nextPowerCheck=0, disableIdleTickLimit=0;
 	unsigned long   clockTime;
 	extern sqInt inIOProcessEvents;
@@ -211,11 +210,9 @@ ioProcessEvents(void) {
 	}
 	if (inIOProcessEvents > 0)
 		inIOProcessEvents -= 1;
-#endif
 	return 0;
 }
 
-#ifndef BROWSERPLUGIN
 int
 HandleEvents(void) {
 	EventRecord		theEvent;
@@ -465,7 +462,6 @@ HandleMouseDown(EventRecord *theEvent) {
 #endif
 	}
 }
-#endif
 
 /*** Event Recording Functions ***/
 
@@ -2122,19 +2118,14 @@ static pascal void
 PowerManagerDefeatTimer (EventLoopTimerRef theTimer,void* userData) {
 #ifdef UNIVERSALBINARY
 #else
-#ifndef BROWSERPLUGIN
     if (gDisablePowerManager && gTapPowerManager) {
         IdleUpdate();
 #if !defined(MINIMALVM)
         UpdateSystemActivity(UsrActivity);
 #endif
     }
-#endif
 #endif 
 }
-
-
-#ifndef BROWSERPLUGIN
 
 void
 doPendingFlush(void) {
@@ -2173,7 +2164,6 @@ ioProcessEvents(void) {
     }
 	return 0;
 }
-#endif 
 
 int
 getUIToLock(long *data) {

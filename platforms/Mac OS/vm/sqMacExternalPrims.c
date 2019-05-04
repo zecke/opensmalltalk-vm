@@ -36,26 +36,19 @@ void createBrowserPluginPath(char *pluginDirPath);
 void* ioLoadModule(char *pluginName) {
 	char pluginDirPath[DOCUMENT_NAME_SIZE+1];
 	CFragConnectionID libHandle;
-#ifndef BROWSERPLUGIN
     #if !defined ( __APPLE__ ) && !defined ( __MACH__ )
 	Ptr mainAddr;
 	Str255 errorMsg,tempPluginName;
 	OSErr err;
 #endif
-#endif    
     	/* first, look in the "<Squeak VM directory>Plugins" directory for the library */
         getVMPathWithEncoding(pluginDirPath,gCurrentVMEncoding);
 	
-#ifdef BROWSERPLUGIN
-        createBrowserPluginPath(pluginDirPath);
-#else
 	strcat(pluginDirPath, "Plugins");
-#endif 	
     
     libHandle = LoadLibViaPath(pluginName, pluginDirPath);
 	if (libHandle != nil) return (void *) libHandle;
 
-#ifndef BROWSERPLUGIN
 	/* second, look directly in Squeak VM directory for the library */
 	getVMPathWithEncoding(pluginDirPath,gCurrentVMEncoding);
 	libHandle = LoadLibViaPath(pluginName, pluginDirPath);
@@ -97,7 +90,6 @@ void* ioLoadModule(char *pluginName) {
 			if (libHandle != nil) return (void *) libHandle;
  		}
 	#endif
-    #endif 
 	
 	return nil;
 }

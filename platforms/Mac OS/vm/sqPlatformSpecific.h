@@ -186,19 +186,6 @@ extern const pthread_key_t tltiIndex;
 # endif /* COGMTVM */
 #endif /* STACKVM || NewspeakVM */
 
-#ifdef BROWSERPLUGIN
-# undef insufficientMemorySpecifiedError
-# undef insufficientMemoryAvailableError
-# undef unableToReadImageError
-# undef browserPluginReturnIfNeeded
-# undef browserPluginInitialiseIfNeeded
-# define insufficientMemorySpecifiedError() plugInNotifyUser("The amount of memory specified by the 'memory' EMBED tag is not enough for the installed Squeak image file.")
-# define insufficientMemoryAvailableError() plugInNotifyUser("There is not enough memory to give Squeak the amount specified by the 'memory' EMBED tag.")
-# define unableToReadImageError() plugInNotifyUser("Read failed or premature end of image file")
-# define browserPluginReturnIfNeeded() if (plugInTimeToReturn()) {ReturnFromInterpret();}
-# define browserPluginInitialiseIfNeeded()
-#endif
-
 //exupery
 #define addressOf(x) &x
 

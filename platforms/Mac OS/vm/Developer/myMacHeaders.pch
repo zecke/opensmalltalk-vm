@@ -41,7 +41,6 @@
 #define ACCESSOR_CALLS_ARE_FUNCTIONS 1
 #define SQUEAK_BUILTIN_PLUGIN
 #define SQ_VI_BYTES_PER_WORD 4
-//#define BROWSERPLUGIN
 #include "myMacHeaders.c"
 #include "config.h"
 #include "interp.h"

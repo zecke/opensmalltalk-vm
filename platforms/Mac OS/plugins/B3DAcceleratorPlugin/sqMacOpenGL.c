@@ -37,10 +37,6 @@
 #include "sqMacOpenGL.h"
 #include "sqOpenGLRenderer.h"
 
-#ifdef BROWSERPLUGIN
-#include "npapi.h"
-#endif
-
 int printRendererInfo(void);
 int printFormatInfo(AGLPixelFormat info);
 
@@ -49,10 +45,6 @@ static glRenderer allRenderer[MAX_RENDERER];
 typedef int (*eventMessageHook)(EventRecord* event);
 
 #ifdef SQUEAK_BUILTIN_PLUGIN
-#ifdef BROWSERPLUGIN
-int gPortX,gPortY;
-extern NP_Port *getNP_Port(void);
-#endif
 void StartDraw(void);
 void EndDraw(void);
 extern WindowPtr getSTWindow(void);
@@ -106,11 +98,6 @@ static int macEventHook(EventRecord *event) {
 	WindowPtr checkMouseDown,checkMouseUp;
 	static WindowPtr oldWindow = NULL;
 
-#ifdef BROWSERPLUGIN
-	NP_Port	*anNPPort;
-	
-#endif		
-
 	if (oldWindow == NULL) 
 		oldWindow = getSTWindow();
 	
@@ -141,20 +128,6 @@ static int macEventHook(EventRecord *event) {
 
 			break;
 		default: 
-			#ifdef BROWSERPLUGIN
-			if (oldWindow != getSTWindow()) {																						
-				windowHasChanged = true;
-			}
-			
-			anNPPort = getNP_Port();
-			if (!(anNPPort->portx == gPortX && anNPPort->porty == gPortY)) {
-				windowHasChanged = true;
-			}
-			
-			if (windowHasChanged) 
-				break;
-			#endif
-			
 			return 0;
 			
 	}
@@ -169,17 +142,8 @@ static int macEventHook(EventRecord *event) {
 				GLint 	bufferRect[4];
 				CGrafPtr	windowPort;
 				
-				#ifdef BROWSERPLUGIN
-					StartDraw();
-					anNPPort = getNP_Port();
-		 			gPortX = anNPPort->portx;
-		 			gPortY = anNPPort->porty;
-					x = renderer->bufferRect[0] - gPortX;
-					y = renderer->bufferRect[1] - gPortY;
-	 			#else
-					x = renderer->bufferRect[0];
-					y = renderer->bufferRect[1];
-				#endif 
+				x = renderer->bufferRect[0];
+				y = renderer->bufferRect[1];
 				w = renderer->bufferRect[2];
 				h = renderer->bufferRect[3];
 
@@ -197,9 +161,6 @@ static int macEventHook(EventRecord *event) {
 				aglSetInteger(renderer->context, AGL_BUFFER_RECT, bufferRect);
 				aglUpdateContext(renderer->context);
 				windowHasChanged = false;
-				#ifdef BROWSERPLUGIN
-					EndDraw();
-				#endif
 			} 
 		}
 	}
@@ -376,27 +337,11 @@ int glCreateRendererFlags(int x, int y, int w, int h, int flags)
 			GLint bufferRect[4];
 			Rect	portRect; 
 			
-#ifdef BROWSERPLUGIN
-
-			NP_Port	*anNPPort;
-			
-			StartDraw();
- 			win = (AGLDrawable) getSTWindow();
- 			anNPPort = getNP_Port();
- 			
-			GetPortBounds(GetWindowPort((WindowPtr)win),&portRect);
-			bufferRect[0] = x - anNPPort->portx;
-			bufferRect[1] = portRect.bottom - portRect.top - (y+h)  + anNPPort->porty;
-			bufferRect[2] = w;
-			bufferRect[3] = h;
-			EndDraw();
-#else
 			GetPortBounds(GetWindowPort((WindowPtr)win),&portRect);
 			bufferRect[0] = x;
 			bufferRect[1] = portRect.bottom - portRect.top - (y+h);
 			bufferRect[2] = w;
 			bufferRect[3] = h;
-#endif		
 
 			/* hardware renderer; attach buffer rect and window */
 			ok = aglEnable(ctx, AGL_BUFFER_RECT);
@@ -544,14 +489,6 @@ int glSwapBuffers(glRenderer *renderer) {
 	if(!renderer) return 0;
 	if(!renderer->used || !renderer->context) return 0;
 	if(renderer->drawable) {
-#ifdef BROWSERPLUGIN
-		NP_Port	*anNPPort;
-		
-		anNPPort = getNP_Port();
-		if (!(anNPPort->portx == gPortX && anNPPort->porty == gPortY)) {
-			return 0;
-		}
-#endif
 		aglSwapBuffers(renderer->context);
 		if((err = aglGetError()) != AGL_NO_ERROR) DPRINTF3D(3,(fp,"ERROR (glSwapBuffers): aglGetError - %s\n", aglErrorString(err)));
 		ERROR_CHECK;
@@ -570,26 +507,17 @@ int glSwapBuffers(glRenderer *renderer) {
 		if(!win) return 0;
 		
 		winPort = (GrafPtr) GetWindowPort((WindowRef) win);
-#ifdef BROWSERPLUGIN
-		StartDraw();
-#else
 		portChanged = QDSwapPort(winPort, &oldPort);
 		GetPortBounds((CGrafPtr) winPort,&portBounds);
 
 //  Draw into the new port here
-
-#endif		
 		SetRect(&src, 0, 0, renderer->bufferRect[2], renderer->bufferRect[3]);
 		SetRect(&dst, renderer->bufferRect[0], renderer->bufferRect[1], 
 				renderer->bufferRect[0] + renderer->bufferRect[2],
 				renderer->bufferRect[1] + renderer->bufferRect[3]);
 		CopyBits(GetPortBitMapForCopyBits(renderer->gWorld), GetPortBitMapForCopyBits((CGrafPtr) winPort), &src, &dst, srcCopy, NULL);
-#ifdef BROWSERPLUGIN
-		EndDraw();
-#else
 		if (portChanged)
 			QDSwapPort(oldPort, NULL);
-#endif		
 	}
 	return 1;
 }
@@ -623,28 +551,11 @@ int glSetBufferRect(int handle, int x, int y, int w, int h) {
 		GLint bufferRect[4];
 		Rect	portRect; 
 		
-#ifdef BROWSERPLUGIN
-		AGLDrawable	win;
-		NP_Port	*anNPPort;
-
-		StartDraw();
-		win = (AGLDrawable) getSTWindow();
-		anNPPort = getNP_Port();
-
-		GetPortBounds(GetWindowPort((WindowPtr)win),&portRect);
-		bufferRect[0] = x - anNPPort->portx;
-		bufferRect[1] = portRect.bottom - portRect.top - (y+h)  + anNPPort->porty;
-		bufferRect[2] = w;
-		bufferRect[3] = h;
-
-		EndDraw();
-#else
 		GetPortBounds(GetWindowPort((WindowPtr) renderer->drawable),&portRect);
 		bufferRect[0] = x;
 		bufferRect[1] = portRect.bottom - portRect.top - (y+h);
 		bufferRect[2] = w;
 		bufferRect[3] = h;
-#endif
 		ok = aglSetInteger(renderer->context, AGL_BUFFER_RECT, bufferRect);
 		if((err = aglGetError()) != AGL_NO_ERROR) 
 			DPRINTF3D(3,(fp,"aglSetInteger(AGL_BUFFER_RECT) failed: aglGetError - %s\n", aglErrorString(err)));

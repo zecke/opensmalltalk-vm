@@ -61,7 +61,6 @@ WindowPtr getSTWindow(void) {
     return  windowHandleFromIndex(1);
 }
 
-#ifndef BROWSERPLUGIN
 #if TARGET_API_MAC_CARBON
 extern struct VirtualMachine *interpreterProxy;
 int ioSetFullScreenActual(int fullScreen);
@@ -709,7 +708,6 @@ void * copy124BitsTheHardWay(unsigned int* dispBitsIndex, int width, int height,
 }
 
 #endif
-#endif
 
 void SetUpPixmap(void) {
 	int i, r, g, b;
@@ -835,7 +833,6 @@ int makeMainWindow(void) {
 		getShortImageNameWithEncoding(shortImageName,gCurrentVMEncoding);
 		SetWindowTitle(1,shortImageName);
 	}
-#ifndef BROWSERPLUGIN
 #if I_AM_CARBON_EVENT	
         ioSetFullScreenActual(getFullScreenFlag());
 		SetUpCarbonEventForWindowIndex(1);
@@ -853,7 +850,6 @@ int makeMainWindow(void) {
 #else
 	ioSetFullScreen(getFullScreenFlag());
 #endif
-#endif 
 #endif
 
 	//SetupSurface(1);
@@ -923,7 +919,6 @@ int ioScreenDepth(void) {
     return (*(*mainDevice)->gdPMap)->pixelSize;
 }
 
-#ifndef BROWSERPLUGIN
 int ioScreenSize(void) {
 	int w, h;
     Rect portRect;
@@ -944,7 +939,6 @@ int ioScreenSize(void) {
 #endif
 	return (w << 16) | (h & 0xFFFF);  /* w is high 16 bits; h is low 16 bits */
 }
-#endif
 
 int ioSetCursorARGB(sqInt bitsIndex, sqInt w, sqInt h, sqInt x, sqInt y) {
   return 0;
@@ -1124,7 +1118,7 @@ GDHandle	getThatDominateGDevice(WindowPtr window) {
 }
 
 
-#if !I_AM_CARBON_EVENT || defined(BROWSERPLUGIN)
+#if !I_AM_CARBON_EVENT
 #define rectWidth(aRect) ((aRect).right - (aRect).left)
 #define rectHeight(aRect) ((aRect).bottom - (aRect).top)
 #define MinWindowWidth(foo) 72*3
