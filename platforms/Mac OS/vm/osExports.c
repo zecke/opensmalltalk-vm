@@ -30,14 +30,6 @@ int serialPortNames(int portNum, char *portName, char *inName, char *outName);
 #endif
 Boolean IsKeyDown(void);
 int primitivePluginBrowserReady(void);
-#ifdef ENABLE_URL_FETCH
-int primitivePluginDestroyRequest(void);
-int primitivePluginRequestFileHandle(void);
-int primitivePluginRequestState(void);
-int primitivePluginRequestURL(void);
-int primitivePluginRequestURLStream(void);
-int primitivePluginPostURL(void);
-#endif
 
 void *os_exports[][3] = {
 	XFN(getSTWindow)
@@ -57,17 +49,5 @@ void *os_exports[][3] = {
 #endif
 	XFN(IsKeyDown)
 	XFN(getUIToLock)
-/* Plugin support primitives
-   We should make these primitives a proper plugin
-   but right now we just need the exports. */
-	XFND(primitivePluginBrowserReady,"\377")
-#ifdef ENABLE_URL_FETCH
-	XFND(primitivePluginRequestURLStream,"\001")
-	XFND(primitivePluginRequestURL,"\001")
-	XFND(primitivePluginPostURL,"\001")
-	XFND(primitivePluginRequestFileHandle,"\000")
-	XFND(primitivePluginDestroyRequest,"\000")
-	XFND(primitivePluginRequestState,"\000")
-#endif
 	{NULL, NULL, NULL}
 };

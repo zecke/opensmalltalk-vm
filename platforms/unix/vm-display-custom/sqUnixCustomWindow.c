@@ -176,14 +176,6 @@ static void display_winExit(void)
 static long  display_winImageFind(char *buf, long len)		{ trace();  return 0; }
 static void display_winImageNotFound(void)			{ trace(); }
 
-static sqInt display_primitivePluginBrowserReady(void)		{ return primitiveFail(); }
-static sqInt display_primitivePluginRequestURLStream(void)	{ return primitiveFail(); }
-static sqInt display_primitivePluginRequestURL(void)		{ return primitiveFail(); }
-static sqInt display_primitivePluginPostURL(void)		{ return primitiveFail(); }
-static sqInt display_primitivePluginRequestFileHandle(void)	{ return primitiveFail(); }
-static sqInt display_primitivePluginDestroyRequest(void)	{ return primitiveFail(); }
-static sqInt display_primitivePluginRequestState(void)		{ return primitiveFail(); }
-
 SqDisplayDefine(custom);	/* name must match that in makeInterface() below */
 
 

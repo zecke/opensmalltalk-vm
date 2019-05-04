@@ -31,7 +31,6 @@ override_dh_auto_configure:
 	mkdir -p build/debian/build
 	cp build.linux32x86/pharo.cog.spur/plugins.* build/debian/build/
 	dh_auto_configure -- \
-		--without-npsqueak \
 		--with-vmversion=5.0 \
 		--with-src=$(SOURCES)
 

@@ -17,10 +17,10 @@ n|no|N|NO)	echo "ok but this isn't safe!!";;
 esac
 test -f plugins.int || (test -f ../plugins.int && cp -p ../plugins.int . || cp -p ../../plugins.int .)
 test -f plugins.ext || (test -f ../plugins.ext && cp -p ../plugins.ext . || cp -p ../../plugins.ext .)
-test -f config.h || ../../../platforms/unix/config/configure --without-npsqueak \
+test -f config.h || ../../../platforms/unix/config/configure  \
 		--without-vm-display-fbdev --with-vmversion=5.0 \
 		--with-src=nsspursrc \
-		--without-vm-display-fbdev --without-npsqueak \
+		--without-vm-display-fbdev  \
 	CFLAGS="$OPT -DI_REALLY_DONT_CARE_HOW_UNSAFE_THIS_IS -DCOGMTVM=0"
 rm -f vm/sqUnixMain.o # nuke version info
 rm -rf ../../../products/$INSTALLDIR

@@ -447,16 +447,6 @@ static void  display_ioGLswapBuffers(glRenderer *r)							{ return  ; }
 static sqInt  display_ioGLmakeCurrentRenderer(glRenderer *r)						{ return 0; }
 static void  display_ioGLsetBufferRect(glRenderer *r, sqInt x, sqInt y, sqInt w, sqInt h)			{ return  ; }
 
-// Mozilla
-
-static sqInt display_primitivePluginBrowserReady()	{ return primitiveFail(); }
-static sqInt display_primitivePluginRequestURLStream()	{ return primitiveFail(); }
-static sqInt display_primitivePluginRequestURL()	{ return primitiveFail(); }
-static sqInt display_primitivePluginPostURL()		{ return primitiveFail(); }
-static sqInt display_primitivePluginRequestFileHandle()	{ return primitiveFail(); }
-static sqInt display_primitivePluginDestroyRequest()	{ return primitiveFail(); }
-static sqInt display_primitivePluginRequestState()	{ return primitiveFail(); }
-
 // Host Windows
 
 #if (SqDisplayVersionMajor >= 1 && SqDisplayVersionMinor >= 2)

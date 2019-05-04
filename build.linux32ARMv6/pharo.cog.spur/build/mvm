@@ -36,7 +36,7 @@ for lib in ${THIRDPARTYLIBS}; do
 done
 
 test -f config.h || ../../../platforms/unix/config/configure \
-		--without-npsqueak \
+		 \
 		--without-vm-display-fbdev \
 		--with-vmversion=5.0 \
 		--with-src=spursrc \

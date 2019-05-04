@@ -88,7 +88,6 @@
 # undef	DEBUG_CONV
 # undef	DEBUG_EVENTS
 # undef	DEBUG_SELECTIONS
-# undef	DEBUG_BROWSER
 # undef	DEBUG_WINDOW
 # undef DEBUG_VISUAL
 #endif
@@ -241,8 +240,6 @@ int		 stHasSameRGBMask32;
 int		 stRNMask, stGNMask, stBNMask;
 int		 stRShift, stGShift, stBShift;
 char		*stDisplayBitmap= 0;
-Window           browserWindow= 0;      /* parent window */
-int		 browserPipes[]= {-1, -1}; /* read/write fd for browser communication */
 int		 headless= 0;
 
 int		 useXdnd= 1;		/* true if we should handle XDND protocol messages */
@@ -308,8 +305,6 @@ static void initInputI18n();
 static void initInputNone();
 static void (*initInput)()= initInputNone;
 #endif
-
-#define inBrowser()	(-1 != browserPipes[0])
 
 /* window states */
 
@@ -456,7 +451,6 @@ static int   translateCode(KeySym symbolic, int *modp, XKeyEvent *evt);
 #if defined(USE_XSHM)
 int    XShmGetEventBase(Display *);
 #endif
-void   browserProcessCommand(void);       /* see sqUnixMozilla.c */
 
 
 static inline int min(int x, int y) { return (x < y) ? x : y; }
@@ -4003,14 +3997,6 @@ static void xHandler(int fd, void *data, int flags)
   aioHandle(stXfd, xHandler, AIO_RX);
 }
 
-
-static void npHandler(int fd, void *data, int flags)
-{
-  browserProcessCommand();
-  aioHandle(browserPipes[0], npHandler, AIO_RX);
-}
-
-
 void getMaskbit(unsigned long ul, int *nmask, int *shift)
 {
   int i;
@@ -4430,22 +4416,6 @@ void initWindow(char *displayName)
 	parentValuemask |= CWColormap;
       }
 
-#  if defined(DEBUG_BROWSER)
-    fprintf(stderr, "browser window %d\n", browserWindow);
-#  endif
-
-    if (browserWindow != 0)
-      {
-	Window root;
-	int s;
-	unsigned int w, h, u;
-	stParent= browserWindow;
-	XGetGeometry(stDisplay, stParent, &root, &s, &s, &w, &h, &u, &u);
-	stWidth= xWidth= w;
-	stHeight= xHeight= h;
-	setSavedWindowSize((w << 16) | h);
-      }
-    else
       {
 	int s= getSavedWindowSize();
 	if (s)
@@ -4502,30 +4472,24 @@ void initWindow(char *displayName)
   XSelectInput(stDisplay, DefaultRootWindow(stDisplay), PropertyChangeMask);
 
   /* set the geometry hints */
-  if (!browserWindow)
-    {
-      XSizeHints *sizeHints= XAllocSizeHints();
-      sizeHints->min_width= 16;
-      sizeHints->min_height= 16;
-      sizeHints->width_inc= sizeof(void *);
-      sizeHints->height_inc= 1;
-      sizeHints->win_gravity= NorthWestGravity;
-      sizeHints->flags= PWinGravity | PResizeInc;
-      XSetWMNormalHints(stDisplay, stWindow, sizeHints);
-      XSetWMNormalHints(stDisplay, stParent, sizeHints);
-      XFree((void *)sizeHints);
-    }
+  XSizeHints *sizeHints= XAllocSizeHints();
+  sizeHints->min_width= 16;
+  sizeHints->min_height= 16;
+  sizeHints->width_inc= sizeof(void *);
+  sizeHints->height_inc= 1;
+  sizeHints->win_gravity= NorthWestGravity;
+  sizeHints->flags= PWinGravity | PResizeInc;
+  XSetWMNormalHints(stDisplay, stWindow, sizeHints);
+  XSetWMNormalHints(stDisplay, stParent, sizeHints);
+  XFree((void *)sizeHints);
 
   /* set the window title and resource/class names */
   {
     XClassHint *classHints= XAllocClassHint();
     classHints->res_class= xResClass;
     classHints->res_name= xResName;
-    if (browserWindow == 0)
-      {
-	XSetClassHint(stDisplay, stParent, classHints);
-	XStoreName(stDisplay, stParent, defaultWindowLabel);
-      }
+    XSetClassHint(stDisplay, stParent, classHints);
+    XStoreName(stDisplay, stParent, defaultWindowLabel);
     XFree((void *)classHints);
   }
 
@@ -4598,16 +4562,6 @@ void setWindowSize(void)
 {
   int width, height, maxWidth, maxHeight;
   int winSize= getSavedWindowSize();
-
-#if defined(DEBUG_BROWSER)
-  fprintf(stderr, "browserWindow %d\n", browserWindow);
-#endif
-
-  if (browserWindow) return;
-
-#if defined(DEBUG_WINDOW)
-  fprintf(stderr, "savedWindowSize %x (%d %d)\n", winSize, winSize >> 16, winSize & 0xffff);
-#endif
 
   if (winSize != 0)
     {
@@ -4992,10 +4946,7 @@ static sqInt display_ioScreenSize(void)
       if (useXshm && !isAligned(void *, xWidth))
 	{
 	  xWidth= align(void *, xWidth);
-	  if (!browserWindow)
-	    {
-	      XResizeWindow(stDisplay, stParent, xWidth, xHeight);
-	    }
+	  XResizeWindow(stDisplay, stParent, xWidth, xHeight);
 	}
 #    endif
       XResizeWindow(stDisplay, stWindow, (stWidth= xWidth), (stHeight= xHeight));
@@ -6825,26 +6776,9 @@ int openXDisplay(void)
       initClipboard();
       initWindow(displayName);
       initPixmap();
-      if (!inBrowser())
-	{
-	  setWindowSize();
-	  XMapWindow(stDisplay, stParent);
-	  XMapWindow(stDisplay, stWindow);
-	}
-      else /* if in browser we will be reparented and mapped by plugin */
-	{
-	  /* tell browser our window */
-#        if defined(DEBUG_BROWSER)
-	  fprintf(stderr, "browser: sending squeak window = 0x%x\n", stWindow);
-#        endif
-	  4 == write(browserPipes[1], &stWindow, 4);
-#        if defined(DEBUG_BROWSER)
-	  fprintf(stderr, "browser: squeak window sent\n");
-#        endif
-	  /* listen for commands */
-	  aioEnable(browserPipes[0], 0, AIO_EXT);
-	  aioHandle(browserPipes[0], npHandler, AIO_RX);
-	}
+      setWindowSize();
+      XMapWindow(stDisplay, stParent);
+      XMapWindow(stDisplay, stWindow);
       isConnectedToXServer= 1;
       aioEnable(stXfd, 0, AIO_EXT);
       aioHandle(stXfd, xHandler, AIO_RX);
@@ -6886,8 +6820,7 @@ int disconnectXDisplay(void)
       XSync(stDisplay, False);
       handleEvents();
       XDestroyWindow(stDisplay, stWindow);
-      if (browserWindow == 0)
-	XDestroyWindow(stDisplay, stParent);
+      XDestroyWindow(stDisplay, stParent);
       if (inputContext)
         {
 	  XIM im= XIMOfIC(inputContext);
@@ -7184,17 +7117,6 @@ static void listVisuals(void)
 
 
 
-/*** browser plugin (from sqUnixMozilla.c) ***/
-
-sqInt display_primitivePluginBrowserReady(void);
-sqInt display_primitivePluginRequestURLStream(void);
-sqInt display_primitivePluginRequestURL(void);
-sqInt display_primitivePluginPostURL(void);
-sqInt display_primitivePluginRequestFileHandle(void);
-sqInt display_primitivePluginDestroyRequest(void);
-sqInt display_primitivePluginRequestState(void);
-
-
 /*** host window support ***/
 
 #if (SqDisplayVersionMajor >= 1 && SqDisplayVersionMinor >= 2)
@@ -7458,8 +7380,6 @@ SqDisplayDefine(X11);
 static void display_printUsage(void)
 {
   printf("\nX11 <option>s:\n");
-  printf("  "VMOPTION("browserWindow")" <wid>  run in window <wid>\n");
-  printf("  "VMOPTION("browserPipes")" <r> <w> run as Browser plugin using descriptors <r> <w>\n");
   printf("  "VMOPTION("cmdmod")" <n>           map Mod<n> to the Command key\n");
   printf("  "VMOPTION("compositioninput")"     enable overlay window for composed characters\n");
   printf("  "VMOPTION("display")" <dpy>        display on <dpy> (default: $DISPLAY)\n");
@@ -7583,35 +7503,6 @@ static int display_parseArgument(int argc, char **argv)
 #    if defined(USE_XICFONT_OPTION)
       else if (!strcmp(arg, VMOPTION("xicfont"))) inputFontStr= argv[1];
 #    endif
-      else if (!strcmp(arg, VMOPTION("browserWindow")))
-	{
-	  sscanf(argv[1], "%lu", (unsigned long *)&browserWindow);
-	  if (browserWindow == 0)
-	    {
-	      fprintf(stderr, "Error: invalid argument for `-browserWindow'\n");
-	      exit(1);
-	    }
-	}
-      else if (!strcmp(arg, VMOPTION("browserPipes")))
-	{
-	  if (!argv[2]) return 0;
-	  sscanf(argv[1], "%i", &browserPipes[0]);
-	  sscanf(argv[2], "%i", &browserPipes[1]);
-	  /* receive browserWindow */
-#	 if defined(DEBUG_BROWSER)
-	  fprintf(stderr, "browser: reading window\n");
-#	 endif
-	  if (sizeof(browserWindow) !=
-	      read(browserPipes[0], (void *)&browserWindow, sizeof(browserWindow)))
-	    {
-	      perror("reading browserWindow");
-	      exit(1);
-	    }
-#	 if defined(DEBUG_BROWSER)
-	  fprintf(stderr, "browser: window = 0x%x\n", browserWindow);
-#	 endif
-	  return 3;
-	}
 #    if (USE_X11_GLX)
       else if (!strcmp(arg, VMOPTION("glxdebug")))
 	{

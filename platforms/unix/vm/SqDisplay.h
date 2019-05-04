@@ -67,14 +67,6 @@ struct SqDisplay
   void   (*ioGLdestroyRenderer)(glRenderer *r);
   void   (*ioGLswapBuffers)(glRenderer *r);
   void   (*ioGLsetBufferRect)(glRenderer *r, sqInt x, sqInt y, sqInt w, sqInt h);
-  /* browser plugin */
-  sqInt  (*primitivePluginBrowserReady)(void);
-  sqInt  (*primitivePluginRequestURLStream)(void);
-  sqInt  (*primitivePluginRequestURL)(void);
-  sqInt  (*primitivePluginPostURL)(void);
-  sqInt  (*primitivePluginRequestFileHandle)(void);
-  sqInt  (*primitivePluginDestroyRequest)(void);
-  sqInt  (*primitivePluginRequestState)(void);
   /* host window support */
   long    (*hostWindowClose)(long index);
   long    (*hostWindowCreate)(long w, long h, long x, long y, char * list, long attributeListLength);
@@ -145,13 +137,6 @@ static struct SqDisplay display_##NAME##_itf= {	\
   display_ioGLdestroyRenderer,			\
   display_ioGLswapBuffers,			\
   display_ioGLsetBufferRect,			\
-  display_primitivePluginBrowserReady,		\
-  display_primitivePluginRequestURLStream,	\
-  display_primitivePluginRequestURL,		\
-  display_primitivePluginPostURL,		\
-  display_primitivePluginRequestFileHandle,	\
-  display_primitivePluginDestroyRequest,	\
-  display_primitivePluginRequestState,		\
   display_hostWindowClose,			\
   display_hostWindowCreate,			\
   display_hostWindowShowDisplay,		\

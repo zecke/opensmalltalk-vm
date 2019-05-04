@@ -850,15 +850,6 @@ void  ioGLsetBufferRect(glRenderer *r, sqInt x, sqInt y, sqInt w, sqInt h)
 }
 
 
-sqInt  primitivePluginBrowserReady(void)	{ return dpy->primitivePluginBrowserReady(); }
-sqInt  primitivePluginRequestURLStream(void)	{ return dpy->primitivePluginRequestURLStream(); }
-sqInt  primitivePluginRequestURL(void)		{ return dpy->primitivePluginRequestURL(); }
-sqInt  primitivePluginPostURL(void)		{ return dpy->primitivePluginPostURL(); }
-sqInt  primitivePluginRequestFileHandle(void)	{ return dpy->primitivePluginRequestFileHandle(); }
-sqInt  primitivePluginDestroyRequest(void)	{ return dpy->primitivePluginDestroyRequest(); }
-sqInt  primitivePluginRequestState(void)	{ return dpy->primitivePluginRequestState(); }
-
-
 /*** errors ***/
 
 static void outOfMemory(void)
@@ -1481,8 +1472,6 @@ static int vm_parseArgument(int argc, char **argv)
       return parseModuleArgument(argc, argv, &type##Module, #type, name);
 
   moduleArg("nodisplay",		display, "null");
-  moduleArg("browserWindow",		display, "X11");
-  moduleArg("browserPipes",		display, "X11");
   moduleArg("closequit",		display, "X11");
   moduleArg("cmdmod",			display, "X11");
   moduleArg("compositioninput",	display, "X11");

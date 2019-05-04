@@ -40,7 +40,7 @@ for lib in ${THIRDPARTYLIBS}; do
 	../../third-party/mvm ${lib}
 done
 
-test -f config.h || ../../../platforms/unix/config/configure --without-npsqueak \
+test -f config.h || ../../../platforms/unix/config/configure  \
 		--with-vmversion=5.0 \
 		--with-src=spursrc \
 	CC="gcc -m32" \

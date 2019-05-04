@@ -38,7 +38,7 @@ done
 test -f config.h || ../../../platforms/unix/config/configure \
 	--with-vmversion=5.0 \
 	--without-vm-display-fbdev \
-	--without-npsqueak \
+	 \
 	--with-src=spurstack64src --disable-cogit \
 	--enable-fast-bitblt \
 	TARGET_ARCH="-march=armv8-a" \

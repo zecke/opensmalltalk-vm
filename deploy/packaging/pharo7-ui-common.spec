@@ -102,7 +102,6 @@ cp build.linux32x86/pharo.cog.spur/plugins.* build/debian/build/
 cd build/debian/build
 echo "foo %{_builddir}"
 %configure \
-		--without-npsqueak \
 		--with-vmversion=5.0 \
 		--with-src=%vmsources
 make %{?_smp_mflags}

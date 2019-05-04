@@ -41,7 +41,7 @@ for lib in ${THIRDPARTYLIBS}; do
 	../../third-party/${lib}/mvm
 done
 
-test -f config.h || ../../../platforms/unix/config/configure --without-npsqueak \
+test -f config.h || ../../../platforms/unix/config/configure  \
 		--with-vmversion=5.0 \
 		--with-src=spurlowcodestacksrc --disable-cogit \
 	TARGET_ARCH="-m32" \

@@ -105,11 +105,3 @@ install-sources :
 
 uninstall-sources :
 	@$(UNINSTALL) $(ROOT)$(imgdir) SqueakV$(SQ_MAJOR).sources
-
-# npsqueak
-
-install-npsqueak : npsqueak getversion .force
-	$(SHELL) -ec 'cd nps; $(MAKE) install ROOT=$(ROOT) VM_VERSION=$(VM_VERSION) plgdir=$(plgdir) bindir=$(bindir) imgdir=$(imgdir)'
-
-uninstall-npsqueak : npsqueak getversion .force
-	$(SHELL) -ec 'cd nps; $(MAKE) uninstall ROOT=$(ROOT) VM_VERSION=$(VM_VERSION) plgdir=$(plgdir) bindir=$(bindir) imgdir=$(imgdir)'

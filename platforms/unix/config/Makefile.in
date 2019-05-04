@@ -45,7 +45,7 @@ binsqueaksh	= bin.squeak.sh
 # http://lists.gnu.org/archive/html/automake/2006-05/msg00091.html
 LIBTOOL = @LIBTOOL@ --preserve-dup-deps
 
-all : $(squeak) plugins squeak.1 $(npsqueak)
+all : $(squeak) plugins squeak.1
 
 # VM
 
@@ -81,17 +81,6 @@ squeak.sh: ${cfgdir}/squeak.sh.in getversion
 
 bin.squeak.sh: ${cfgdir}/bin.squeak.sh.in getversion
 	sed "s|.expanded_relative_imgdir.|lib/squeak/`./getversion VERSION_TAG`|" <${cfgdir}/bin.squeak.sh.in >bin.squeak.sh
-
-# npsqueak
-
-npsqueak : nps/npsqueak.so
-
-nps :
-	mkdir nps
-	$(SHELL) -ec 'cd nps; ln -s $(topdir)/platforms/unix/npsqueak/* .'
-
-nps/npsqueak.so : nps getversion
-	$(SHELL) -ec 'cd nps; $(MAKE) plgdir=$(plgdir) bindir=$(bindir) imgdir=$(imgdir)'
 
 # OSX app bundle
 

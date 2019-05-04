@@ -2603,15 +2603,6 @@ static int display_winImageFind(char *buf, int len)
 }
 
 
-static sqInt display_primitivePluginBrowserReady(void)		{ return primitiveFail(); }
-static sqInt display_primitivePluginRequestURLStream(void)	{ return primitiveFail(); }
-static sqInt display_primitivePluginRequestURL(void)		{ return primitiveFail(); }
-static sqInt display_primitivePluginPostURL(void)		{ return primitiveFail(); }
-static sqInt display_primitivePluginRequestFileHandle(void)	{ return primitiveFail(); }
-static sqInt display_primitivePluginDestroyRequest(void)	{ return primitiveFail(); }
-static sqInt display_primitivePluginRequestState(void)		{ return primitiveFail(); }
-
-
 /// 
 /// OpenGL stuff
 /// 

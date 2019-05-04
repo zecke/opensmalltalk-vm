@@ -357,7 +357,6 @@ case $host_os in
   darwin*)
     AC_DEFINE([DARWIN],[1], [Defined when building on Darwin])
 #    CFLAGS="-no-cpp-precomp $CFLAGS"
-    with_npsqueak=no
     VM_APP_ICONS="${imgdir}/SqueakVM.icns"
     ;;
   *)
@@ -366,27 +365,6 @@ case $host_os in
 esac
 
 AC_SUBST(VM_APP_ICONS)
-
-# Checks for browser support
-
-AC_SUBST(npsqueak)
-AC_SUBST(install_nps)
-AC_SUBST(uninstall_nps)
-
-AC_ARG_WITH(npsqueak,
-	AS_HELP_STRING([ --without-npsqueak], [     disable browser plugin support (default=enabled)]),
-	  [with_npsqueak="$withval"],
-	  [with_npsqueak="yes"])
-
-if test "$with_npsqueak" = "no"; then
-  npsqueak=""
-  install_nps=""
-  uninstall_nps=""
-else
-  npsqueak=npsqueak
-  install_nps=install-npsqueak
-  uninstall_nps=uninstall-npsqueak
-fi
 
 # Install locations
 

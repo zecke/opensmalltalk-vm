@@ -10,7 +10,7 @@ AC_ARG_WITH(gl,
   [have_gl="$withval"],
   [have_gl="yes"])
 
-vm_dispx11_objs="sqUnixX11.lo sqUnixMozilla.lo"
+vm_dispx11_objs="sqUnixX11.lo"
 vm_dispx11_bitblt_flags=""
 
 case $host_cpu in
@@ -18,7 +18,7 @@ arm*)
 AC_ARG_ENABLE(fast-bitblt,
   AS_HELP_STRING([--enable-fast-bitblt],[enable fast BitBlt optimizations (default=no)]),
   [ if   test "x$enableval" = "xyes" ; then
-      vm_dispx11_objs="sqUnixX11.lo sqUnixMozilla.lo sqUnixX11Arm.lo"
+      vm_dispx11_objs="sqUnixX11.lo sqUnixX11Arm.lo"
       vm_dispx11_bitblt_flags="-DENABLE_FAST_BLT"
    fi
   ],
